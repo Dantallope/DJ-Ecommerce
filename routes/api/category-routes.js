@@ -17,25 +17,84 @@ router.get('/', async (req, res) => {
     console.error(error);
     res.status(500).json(error);
   }
-  // find all categories
-  // be sure to include its associated Products
 });
 
-router.get('/:id', (req, res) => {
-  // find one category by its `id` value
-  // be sure to include its associated Products
+router.get('/:id', async (req, res) => {
+  try {
+    const dbCategoryData = await Category.findOne({
+      where: {
+        id: req.params.id
+      },
+      attributes: [
+        'id',
+        'category_name'
+      ],
+      include: [
+        {
+          model: Product,
+          attributes: ['id', 'product_name', 'price', 'stock', 'category_id'],
+        }
+      ]
+    });
+    res.json(dbCategoryData);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
 });
 
-router.post('/', (req, res) => {
-  // create a new category
+router.post('/', async (req, res) => {
+  try {
+    const dbCategoryData = await Category.create({
+      id: req.body.id,
+      category_name: req.body.category_name
+    });
+    res.json(dbCategoryData);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
 });
 
-router.put('/:id', (req, res) => {
-  // update a category by its `id` value
+router.put('/:id', async (req, res) => {
+  try {
+    const dbCategoryData = await Category.update(
+      {
+        category_name: req.body.category_name
+      },
+      {
+        where: {
+          id: req.params.id
+        }
+      }
+    );
+    if (!dbCategoryData[0]) {
+      res.status(404).json({ message: 'Category does not exist' });
+      return;
+    }
+    res.json(dbCategoryData);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
 });
 
-router.delete('/:id', (req, res) => {
-  // delete a category by its `id` value
+router.delete('/:id', async (req, res) => {
+  try {
+    const dbCategoryData = await Category.destroy({
+      where: {
+        id: req.params.id
+      }
+    });
+    if (!dbCategoryData) {
+      res.status(404).json({ message: 'Category does not exist' });
+      return;
+    }
+    res.json(dbCategoryData);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
 });
 
 module.exports = router;
